@@ -12,6 +12,7 @@ import { AppService } from './app.service';
 import configuration from './config/configuration';
 import { ConfigService } from '@nestjs/config';
 import { AuthenticatedGuard } from './auth/authenticated.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 @Controller('')
 export class AppController {
   constructor(
@@ -20,8 +21,10 @@ export class AppController {
   ) {}
 
   @Get('/protected')
-  @UseGuards(AuthenticatedGuard)
-  getHello(): string {
+  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(JwtAuthGuard)
+  getHello(@Request() req): string {
+    console.log(req.user);
     return this.appService.getHello();
   }
 }

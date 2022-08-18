@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
@@ -19,9 +20,12 @@ export class AuthController {
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  async login(@Body() loginDto: LoginDto) {
-    console.log('login auth');
-    return await this.authService.login(loginDto);
+  // async login(@Body() loginDto: LoginDto) {
+  //   return await this.authService.login(loginDto);
+  // }
+  async login(@Request() req) {
+    console.log(req.user);
+    return await this.authService.login(req);
   }
 
   // @Post('register')

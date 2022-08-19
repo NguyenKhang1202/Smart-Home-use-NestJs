@@ -1,3 +1,5 @@
+import { Exclude } from 'class-transformer';
+import { IsEnum } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -5,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Role } from './role.enum';
 
 @Entity()
 export class User {
@@ -14,17 +17,21 @@ export class User {
   @Column({ type: 'varchar', unique: true, length: 50 })
   username: string;
 
+  @Exclude()
   @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ type: 'smallint' })
-  age: number;
+  @Column({ type: 'smallint', default: null })
+  age?: number;
 
   @Column({ type: 'varchar', length: 50 })
   fullName: string;
 
   @Column('text')
   role: string;
+
+  @Column({ type: 'varchar', length: 50 })
+  email: string;
 
   @CreateDateColumn()
   createdAt: Date;

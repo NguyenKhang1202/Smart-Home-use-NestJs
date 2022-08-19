@@ -8,28 +8,27 @@ import {
   Delete,
   UseGuards,
   Request,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { LocalAuthGuard } from './local-auth.guard';
-
+import { LocalAuthGuard } from 'src/guard/local-auth.guard';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  // async login(@Body() loginDto: LoginDto) {
-  //   return await this.authService.login(loginDto);
-  // }
   async login(@Request() req) {
-    console.log(req.user);
     return await this.authService.login(req);
   }
 
-  // @Post('register')
-  // register(@Body() registerDto: RegisterDto) {
-  //   return this.authService.register(registerDto);
-  // }
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('register')
+  async registerNewUser(@Body() createUserDto: CreateUserDto) {
+    return await this.authService.registerNewUser(createUserDto);
+  }
 }

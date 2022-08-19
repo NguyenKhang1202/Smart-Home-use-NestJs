@@ -12,7 +12,8 @@ import configuration from './config/configuration';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { HomeModule } from './home/home.module';
+import { RolesGuard } from './guard/roles.guard';
+import { HouseModule } from './house/house.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot(config),
@@ -22,9 +23,15 @@ import { HomeModule } from './home/home.module';
     }),
     UsersModule,
     AuthModule,
-    HomeModule,
+    HouseModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'APP_GUARD',
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

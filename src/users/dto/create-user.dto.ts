@@ -1,23 +1,39 @@
-import { IsDefined, IsNumber, IsString } from 'class-validator';
-
+import {
+  IsDefined,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Role } from '../entities/role.enum';
+// default trong class DTO là các field sẽ là optional
+// Để biến nó thành bắt buộc thì thêm trường @Is...()
+// Để biến nó thành có thể null nhưng nếu có thì phải theo format
+// dùng : @IsOptional() + @Is...()
 export class CreateUserDto {
   @IsString()
-  @IsDefined()
+  @IsNotEmpty()
   username: string;
 
   @IsString()
-  @IsDefined()
+  @IsNotEmpty()
   password: string;
 
   @IsString()
-  @IsDefined()
+  @IsNotEmpty()
   fullName: string;
 
   @IsString()
-  @IsDefined()
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @IsEnum(Role)
   role: string;
 
+  @IsOptional()
   @IsNumber()
-  @IsDefined()
-  age?: number;
+  age: number;
 }

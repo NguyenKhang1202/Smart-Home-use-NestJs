@@ -17,7 +17,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
-    const result = { ...user, age: '224' };
+    const result = { ...user, age: 224 };
     return result;
   }
 }

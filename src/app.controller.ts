@@ -11,8 +11,9 @@ import {
 import { AppService } from './app.service';
 import configuration from './config/configuration';
 import { ConfigService } from '@nestjs/config';
-import { AuthenticatedGuard } from './auth/authenticated.guard';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
+import { Roles } from './decorators/roles.decorators';
+import { Role } from './users/entities/role.enum';
 @Controller('')
 export class AppController {
   constructor(
@@ -21,8 +22,8 @@ export class AppController {
   ) {}
 
   @Get('/protected')
-  // @UseGuards(AuthenticatedGuard)
   @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.USER)
   getHello(@Request() req): string {
     console.log(req.user);
     return this.appService.getHello();

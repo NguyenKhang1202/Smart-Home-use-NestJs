@@ -11,10 +11,11 @@ import {
 import { HouseService } from './house.service';
 import { CreateHouseDto } from './dto/create-house.dto';
 import { UpdateHouseDto } from './dto/update-house.dto';
-import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/security/guard/jwt-auth.guard';
 import { Role } from 'src/users/entities/role.enum';
-import { Roles } from 'src/decorators/roles.decorators';
-
+import { Roles } from 'src/security/decorators/roles.decorators';
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('houses')
 @Controller('house')
 export class HouseController {
   constructor(private readonly houseService: HouseService) {}

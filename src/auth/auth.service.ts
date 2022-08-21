@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  Req,
   Request,
   UseInterceptors,
 } from '@nestjs/common';
@@ -20,7 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(@Request() req) {
+  async login(@Req() req) {
     const user = req.user;
     const payload = { username: user.username, sub: user.id };
     return {
@@ -28,26 +29,20 @@ export class AuthService {
     };
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
-  async registerNewUser(createUserDto: CreateUserDto): Promise<UserDto> {
+  async registerNewUser(createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.create(createUserDto);
   }
 
-  async validateUser(
-    username: string,
-    password: string,
-  ): Promise<UserDto | null> {
+  async validateUser(username: string, password: string): Promise<User | null> {
     const user: User = await this.userService.findOneByField({
       where: { username: username },
     });
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        const { password, ...result } = user;
-        return result; // UserDto
+        return user;
       }
     }
-
     return null;
   }
 }

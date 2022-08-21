@@ -1,4 +1,6 @@
 import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { ApiProperty } from '@nestjs/swagger';
+import { Role } from '../entities/role.enum';
 import { CreateUserDto } from './create-user.dto';
 // import {
 //   IsNumber,
@@ -36,4 +38,15 @@ import { CreateUserDto } from './create-user.dto';
 // export class UpdateUserDto extends PartialType(CreateUserDto) {}
 export class UpdateUserDto extends PartialType(
   OmitType(CreateUserDto, ['username'] as const),
-) {}
+) {
+  @ApiProperty({ type: 'string', required: false })
+  password: string;
+  @ApiProperty({ type: 'string', required: false })
+  fullName: string;
+  @ApiProperty({ type: 'string', required: false })
+  email: string;
+  @ApiProperty({ enum: Role, required: false })
+  role: string;
+  @ApiProperty({ type: 'number', required: false })
+  age: number;
+}

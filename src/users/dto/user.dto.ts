@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsDefined } from 'class-validator';
+import { IsString, IsNumber, IsDefined, IsEnum } from 'class-validator';
+import { Role } from '../entities/role.enum';
 
 export class UserDto {
   @IsString()
@@ -13,4 +14,7 @@ export class UserDto {
 
   @IsString()
   email: string;
+
+  @IsEnum(Role)
+  role: string;
 }

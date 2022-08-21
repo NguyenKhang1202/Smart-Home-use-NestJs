@@ -12,8 +12,9 @@ import configuration from './config/configuration';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { RolesGuard } from './guard/roles.guard';
+import { RolesGuard } from './security/guard/roles.guard';
 import { HouseModule } from './house/house.module';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
 @Module({
   imports: [
     TypeOrmModule.forRoot(config),
@@ -35,3 +36,8 @@ import { HouseModule } from './house/house.module';
   ],
 })
 export class AppModule {}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer.apply(LoggerMiddleware).forRoutes('*');
+//   }
+// }

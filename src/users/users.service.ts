@@ -19,7 +19,7 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       // eslint-disable-next-line prefer-const
       let userFind: User = await this.findOneByField({

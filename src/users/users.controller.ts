@@ -10,6 +10,8 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   HttpCode,
+  ParseIntPipe,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -26,11 +28,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
-@ApiBearerAuth()
-@ApiResponse({ status: 403, description: 'Forbidden.' })
+import { LoggingInterceptor } from 'src/client/interceptors/logging.interceptor';
+import { Auth } from 'src/security/decorators/auth.decorator';
 @ApiTags('users')
-// @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@Auth(Role.ADMIN)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -38,7 +39,6 @@ export class UsersController {
   @ApiOperation({ summary: 'Create user' })
   @ApiResponse({ status: 201, description: 'Create account success!' })
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(Role.ADMIN)
   @Post()
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.usersService.create(createUserDto);
@@ -47,7 +47,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Get list of users success!' })
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(Role.ADMIN)
+  @Roles()
   @Get()
   async findAll(): Promise<User[]> {
     return await this.usersService.findAll();
@@ -62,17 +62,23 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'Update user' })
-  @ApiResponse({ status: 204, description: 'Update user success!' })
-  @Roles(Role.ADMIN, Role.USER)
+  @ApiResponse({ status: 200, description: 'Update user success!' })
   @HttpCode(200)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.usersService.update(+id, updateUserDto); // dấu + để ép string thành number
+  async update(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    console.log(typeof id);
+    return await this.usersService.update(id, updateUserDto); // dấu + để ép string thành number
   }
 
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 204, description: 'Delete user success!' })
-  @Roles(Role.ADMIN)
   @Delete(':id')
   @HttpCode(200)
   async remove(@Param('id') id: string): Promise<DeleteResult> {

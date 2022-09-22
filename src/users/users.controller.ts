@@ -1,18 +1,14 @@
+/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
-  Res,
-  UseGuards,
   UseInterceptors,
   ClassSerializerInterceptor,
-  HttpCode,
   Logger,
-  ParseIntPipe,
   HttpStatus,
   HttpException,
   Put,
@@ -22,15 +18,12 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Role } from './entities/role.enum';
-import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import apiResponse from 'src/utils/api.response';
-import { DeleteResult } from 'typeorm';
-import { Response } from 'express';
 import { Auth } from 'src/security/decorators/auth.decorator';
 import hashPassword from 'src/utils/hash.password';
-const logger: Logger = new Logger('users.controller.ts');
+// const logger: Logger = new Logger('users.controller.ts');
+
 @ApiTags('users')
 @Controller('/api/v1/users')
 export class UsersController {
@@ -42,7 +35,7 @@ export class UsersController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Auth(Role.ADMIN)
   @Get()
-  async getAllUser(): Promise<ApiResponse> {
+  async getAllUser(): Promise<APIResponse<User[]>> {
     const users: User[] = await this.usersService.getAllUserDb({});
     if (users) {
       return {
@@ -52,7 +45,13 @@ export class UsersController {
       };
     }
 
-    throw new HttpException('Server error!', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      {
+        status: APIStatus.ERROR,
+        message: 'Server error!',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
   // GET one user
@@ -61,7 +60,7 @@ export class UsersController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Auth(Role.ADMIN)
   @Get(':id')
-  async getUser(@Param('id') id: string): Promise<ApiResponse> {
+  async getUser(@Param('id') id: string): Promise<APIResponse<User>> {
     const user: User = await this.usersService.getUserDb({ id });
     if (user) {
       return {
@@ -71,19 +70,23 @@ export class UsersController {
       };
     }
 
-    throw new HttpException('Server error!', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      {
+        status: APIStatus.ERROR,
+        message: 'Server error!',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
   // insert new user
   @ApiOperation({ summary: 'Create user' })
   @ApiResponse({ status: 201, description: 'Create account success!' })
-  @UseInterceptors(ClassSerializerInterceptor)
   @Auth(Role.ADMIN)
   @Post()
   async createUser(
     @Body() createUserDto: CreateUserDto,
-    @Res() res: Response,
-  ): Promise<ApiResponse | any> {
+  ): Promise<APIResponse<User> | undefined> {
     try {
       const isEmailExist: User | null = await this.usersService.getUserDb({
         email: createUserDto.email,
@@ -92,28 +95,32 @@ export class UsersController {
         username: createUserDto.username,
       });
       if (isEmailExist) {
-        return res.status(HttpStatus.CONFLICT).json({
-          status: APIStatus.FAILURE,
-          message: 'Email already in use',
-          data: null,
-        });
+        throw new HttpException(
+          {
+            status: APIStatus.FAILURE,
+            message: 'Email already in use',
+          },
+          HttpStatus.CONFLICT,
+        );
       }
       if (isUsernameExist) {
-        return res.status(HttpStatus.CONFLICT).json({
-          status: APIStatus.FAILURE,
-          message: 'Username already in use',
-          data: null,
-        });
+        throw new HttpException(
+          {
+            status: APIStatus.FAILURE,
+            message: 'Username already in use',
+          },
+          HttpStatus.CONFLICT,
+        );
       }
       const hashedPass = await hashPassword(createUserDto.password);
       createUserDto.password = hashedPass;
 
       const user = await this.usersService.createUserDb(createUserDto);
-      return res.status(HttpStatus.OK).json({
+      return {
         status: APIStatus.SUCCESS,
         message: 'Insert user success',
         data: user,
-      });
+      };
     } catch (error) {
       throw new HttpException(
         'Server error!',
@@ -130,28 +137,27 @@ export class UsersController {
     @Param('id')
     id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Res() res: Response,
-  ): Promise<ApiResponse | any> {
+  ): Promise<APIResponse<User> | any> {
     const userForEdit: User = await this.usersService.getUserDb({ id });
     if (!userForEdit) {
-      return res.status(HttpStatus.BAD_REQUEST).json(
-        apiResponse({
+      throw new HttpException(
+        {
           status: APIStatus.FAILURE,
           message: 'Incorrect account id',
-          data: null,
-        }),
+        },
+        HttpStatus.BAD_REQUEST,
       );
     }
     const isEmailExist: User | null = await this.usersService.getUserDb({
       email: updateUserDto.email,
     });
     if (isEmailExist && isEmailExist.id != id) {
-      return res.status(HttpStatus.CONFLICT).json(
-        apiResponse({
+      throw new HttpException(
+        {
           status: APIStatus.FAILURE,
-          message: 'Email is already in use.',
-          data: null,
-        }),
+          message: 'Email is already in use',
+        },
+        HttpStatus.CONFLICT,
       );
     }
     const user: User = await this.usersService.updateUserDb(
@@ -159,46 +165,51 @@ export class UsersController {
       userForEdit,
     );
     if (user) {
-      return res.status(200).json(
-        apiResponse({
-          status: APIStatus.SUCCESS,
-          message: 'Update user success',
-          data: user,
-        }),
-      );
+      return {
+        status: APIStatus.SUCCESS,
+        message: 'Update user success',
+        data: user,
+      };
     }
 
-    throw new HttpException('Server error!', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      {
+        status: APIStatus.ERROR,
+        message: 'Server error!',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
   @ApiOperation({ summary: 'Delete one user' })
   @ApiResponse({ status: 204, description: 'Delete user success!' })
   @Delete(':id')
-  async deleteUser(
-    @Param('id') id: string,
-    @Res() res: Response,
-  ): Promise<ApiResponse | any> {
+  async deleteUser(@Param('id') id: string): Promise<APIResponse<null> | any> {
     const userForDelete = await this.usersService.getUserDb({ id });
     if (!userForDelete) {
-      return res.status(HttpStatus.BAD_REQUEST).json(
-        apiResponse({
+      throw new HttpException(
+        {
           status: APIStatus.FAILURE,
           message: `Account doesn't exist`,
-          data: null,
-        }),
+        },
+        HttpStatus.BAD_REQUEST,
       );
     }
     const rs = await this.usersService.deleteUserDb(id);
     if (rs) {
-      return res.status(HttpStatus.OK).json(
-        apiResponse({
-          status: APIStatus.SUCCESS,
-          message: 'Delete user success',
-          data: null,
-        }),
-      );
+      return {
+        status: APIStatus.SUCCESS,
+        message: 'Delete user success',
+        data: null,
+      };
     }
 
-    throw new HttpException('Server error!', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      {
+        status: APIStatus.ERROR,
+        message: 'Server error!',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 }

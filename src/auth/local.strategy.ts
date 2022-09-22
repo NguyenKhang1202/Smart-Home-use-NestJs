@@ -16,12 +16,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   // kết quả sẽ được gán vào biến user của req => truy cập: req.user
   async validate(username: string, password: string): Promise<UserDto> {
     const loginRequestDto: LoginRequestDto = { username, password };
-    const userDto: UserDto = await this.authService.validateUser(
-      loginRequestDto,
-    );
-    if (!userDto) {
+    const user: User = await this.authService.validateUser(loginRequestDto);
+    if (!user) {
       throw new UnauthorizedException();
     }
-    return userDto;
+    return user;
   }
 }

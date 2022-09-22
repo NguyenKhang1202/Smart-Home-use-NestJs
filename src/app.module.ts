@@ -13,8 +13,10 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesGuard } from './security/guard/roles.guard';
-// import { HouseModule } from './house/house.module';
-import { LoggerMiddleware } from './middlewares/logger.middleware';
+// import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { RoomModule } from './room/room.module';
+import { DeviceModule } from './device/device.module';
+import { SensorModule } from './sensor/sensor.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot(config),
@@ -24,7 +26,9 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
     }),
     UsersModule,
     AuthModule,
-    // HouseModule,
+    RoomModule,
+    DeviceModule,
+    SensorModule,
   ],
   controllers: [AppController],
   providers: [

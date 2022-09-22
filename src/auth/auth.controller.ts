@@ -10,14 +10,15 @@ import {
   Res,
   HttpStatus,
   HttpException,
+  HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from 'src/security/guard/local-auth.guard';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ChangePasswordDto } from './dto/auth.dto';
+import { ChangePasswordDto, LoginResponseDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import apiResponse from 'src/utils/api.response';
+// import apiResponse from 'src/utils/api.response';
 import { Response } from 'express';
 import { APIStatus } from 'src/config/constants';
 import { UsersService } from 'src/users/users.service';
@@ -31,51 +32,79 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
+  // login
   @ApiOperation({ summary: 'Login' })
   @Post('login')
+  @HttpCode(200)
   @UseGuards(LocalAuthGuard) // chỉ khi login mới gán user cho request
   // username và password được LocalAuthGuard xử lý
-  async login(@Req() req: Request) {
-    return await this.authService.login(req);
+  async login(
+    @Req() req: Request,
+  ): Promise<APIResponse<LoginResponseDto | any>> {
+    const rs = await this.authService.login(req);
+    return {
+      status: APIStatus.SUCCESS,
+      message: 'Login success',
+      data: rs,
+    };
   }
 
+  // register
   @ApiOperation({ summary: 'Register user' })
-  @UseInterceptors(ClassSerializerInterceptor)
   @Post('register')
-  async registerNewUser(@Body() createUserDto: CreateUserDto) {
-    return await this.authService.registerNewUser(createUserDto);
+  @HttpCode(201)
+  async registerNewUser(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<APIResponse<User> | undefined> {
+    const rs = await this.authService.registerNewUser(createUserDto);
+    if (rs) {
+      return {
+        status: APIStatus.SUCCESS,
+        message: 'Register success',
+        data: rs,
+      };
+    }
+
+    throw new HttpException(
+      {
+        status: APIStatus.ERROR,
+        message: 'Server error!',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
+  // change password
   @ApiOperation({ summary: 'Change password' })
-  @UseInterceptors(ClassSerializerInterceptor)
   @Post('change-password')
+  @HttpCode(200)
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
     @Req() req: any,
     @Res() res: Response,
-  ): Promise<ApiResponse | any> {
+  ): Promise<APIResponse<null> | any> {
     if (changePasswordDto.oldPassword == changePasswordDto.newPassword) {
-      return res.status(HttpStatus.BAD_REQUEST).json(
-        apiResponse({
+      throw new HttpException(
+        {
           status: APIStatus.FAILURE,
           message: 'Old password and new password cannot be same',
-          data: null,
-        }),
+        },
+        HttpStatus.BAD_REQUEST,
       );
     }
-    const id: string = req.user.id;
-    const user: User = await this.usersService.getUserDb({ id });
+    const userId = req?.user?.userId;
+    const user = await this.usersService.getUserDb({ id: userId });
     const isMatch = await bcrypt.compare(
       changePasswordDto.oldPassword,
       user.password,
     );
     if (!isMatch) {
-      return res.status(HttpStatus.BAD_REQUEST).json(
-        apiResponse({
+      throw new HttpException(
+        {
           status: APIStatus.FAILURE,
           message: 'Old password is wrong',
-          data: null,
-        }),
+        },
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -84,15 +113,19 @@ export class AuthController {
     );
     const rs = await this.authService.changePasswordDb(user, hashedPass);
     if (rs) {
-      return res.status(HttpStatus.OK).json(
-        apiResponse({
-          status: APIStatus.SUCCESS,
-          message: 'Change password success',
-          data: null,
-        }),
-      );
+      return res.status(HttpStatus.OK).json({
+        status: APIStatus.SUCCESS,
+        message: 'Change password success',
+        data: null,
+      });
     }
 
-    throw new HttpException('Server error!', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      {
+        status: APIStatus.ERROR,
+        message: 'Server error!',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 }

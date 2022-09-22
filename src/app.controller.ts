@@ -31,7 +31,7 @@ export class AppController {
   @ApiOperation({ summary: 'test' })
   @Get('/app/protected')
   @Auth(Role.ADMIN)
-  getHello(@Req() req): string {
+  getHello(@Req() req: Request | any): string {
     console.log(req.user);
     return this.appService.getHello();
   }

@@ -23,8 +23,8 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(@Req() req) {
-    const user = req.user;
+  async login(@Req() req: any) {
+    const user: User = req?.user;
     const payload = { username: user.username, sub: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
@@ -32,7 +32,11 @@ export class AuthService {
   }
 
   async registerNewUser(createUserDto: CreateUserDto): Promise<User> {
-    return await this.usersService.createUserDb(createUserDto);
+    try {
+      return await this.usersService.createUserDb(createUserDto);
+    } catch (error) {
+      logger.error('registerNewUser: ' + error);
+    }
   }
 
   async changePasswordDb(
@@ -50,9 +54,7 @@ export class AuthService {
     }
   }
 
-  async validateUser(
-    loginRequestDto: LoginRequestDto,
-  ): Promise<UserDto | null> {
+  async validateUser(loginRequestDto: LoginRequestDto): Promise<User | null> {
     const user: User = await this.usersService.getUserDb({
       username: loginRequestDto.username,
     });
@@ -62,8 +64,7 @@ export class AuthService {
         user.password,
       );
       if (isMatch) {
-        const { password, ...info } = user;
-        return info;
+        return user;
       }
     }
     return null;

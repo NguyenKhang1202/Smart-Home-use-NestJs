@@ -1,6 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface ApiResponse {
+interface APIResponse<T> {
   status: string;
   message: string;
-  data: any | undefined | null;
+  data: T;
+}
+
+interface APIResponseError {
+  status: string;
+  message: string;
 }

@@ -37,7 +37,7 @@ import { CreateUserDto } from './create-user.dto';
 // }
 // export class UpdateUserDto extends PartialType(CreateUserDto) {}
 export class UpdateUserDto extends PartialType(
-  OmitType(CreateUserDto, ['username'] as const),
+  OmitType(CreateUserDto, ['username', 'password'] as const),
 ) {
   @ApiProperty({ type: 'string', required: false })
   password: string;

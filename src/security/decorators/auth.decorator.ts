@@ -9,7 +9,6 @@ import { Roles } from './roles.decorators';
 export function Auth(...roles: Role[]) {
   return applyDecorators(
     Roles(...roles),
-    // UseGuards(AuthGuard, RolesGuard),
     ApiBearerAuth(),
     ApiResponse({ status: 403, description: 'Forbidden.' }),
     UseGuards(JwtAuthGuard),

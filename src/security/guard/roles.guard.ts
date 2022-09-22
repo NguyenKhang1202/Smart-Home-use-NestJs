@@ -13,7 +13,8 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!requiredRoles) return true;
+    // Nếu không có requiredRoles or requiredRoles = [] thì return true
+    if (!requiredRoles || requiredRoles.length == 0) return true;
     const { user } = context.switchToHttp().getRequest();
     if (!user) return false;
     if (user.role === Role.ADMIN) return true;

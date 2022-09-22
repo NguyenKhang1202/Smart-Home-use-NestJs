@@ -1,7 +1,6 @@
 import { IsString, IsDefined, IsNotEmpty, IsEnum } from 'class-validator';
-import { Role } from 'src/users/entities/role.enum';
 
-export class LoginDto {
+export class LoginRequestDto {
   @IsNotEmpty()
   @IsString()
   username: string;
@@ -9,4 +8,20 @@ export class LoginDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+}
+
+export class LoginResponseDto {
+  @IsNotEmpty()
+  @IsString()
+  accessToken: string;
+}
+
+export class ChangePasswordDto {
+  @IsNotEmpty()
+  @IsString()
+  oldPassword: string;
+
+  @IsNotEmpty()
+  @IsString()
+  newPassword: string;
 }

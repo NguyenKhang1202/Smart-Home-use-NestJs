@@ -1,100 +1,96 @@
-import { Body, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  Body,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LoginDto } from 'src/auth/dto/auth.dto';
+import { ChangePasswordDto, LoginRequestDto } from 'src/auth/dto/auth.dto';
 import {
   Repository,
   FindManyOptions,
   FindOneOptions,
   DeleteResult,
+  FindOptionsWhere,
+  UpdateResult,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
-
+const logger: Logger = new Logger('users.services.ts');
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  // get all users
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/ban-types
+  async getAllUserDb(query: Object): Promise<User[] | undefined> {
     try {
-      // eslint-disable-next-line prefer-const
-      let userFind: User = await this.findOneByField({
-        where: {
-          username: createUserDto.username,
-        },
-      });
-      if (userFind) {
-        throw new HttpException(
-          'Login name already used!',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      userFind = await this.findOneByField({
-        where: { email: createUserDto.email },
-      });
-      if (userFind) {
-        throw new HttpException('Email already used!', HttpStatus.BAD_REQUEST);
-      }
+      const user: User[] = await this.userRepository.findBy({});
+      return user;
+    } catch (error) {
+      logger.error('getAllUserDb: ' + error);
+    }
+  }
+
+  // get one user
+  async getUserDb(query: FindOptionsWhere<User>): Promise<User | undefined> {
+    try {
+      return await this.userRepository.findOneBy(query);
+      return;
+    } catch (error) {
+      logger.error('getUserDb: ' + error);
+    }
+  }
+
+  // insert new user
+  async createUserDb(createUserDto: CreateUserDto): Promise<User | undefined> {
+    try {
       const hashPassword = await bcrypt.hash(createUserDto.password, 10);
 
-      const user: User = await this.userRepository.create({
+      const userCreate: CreateUserDto = this.userRepository.create({
         ...createUserDto,
         password: hashPassword,
       });
-      return await this.userRepository.save(user);
+      const user: User = await this.userRepository.save(userCreate);
+      return user;
     } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      logger.error('createUserDb: ' + error);
     }
   }
 
-  async findAll(): Promise<User[]> {
+  // update user info
+  async updateUserDb(updateUserDto: UpdateUserDto, userForEdit: User) {
     try {
-      return await this.userRepository.find({});
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
-  }
+      userForEdit.email = updateUserDto.email;
+      userForEdit.fullName = updateUserDto.fullName;
+      userForEdit.role = updateUserDto.role;
+      userForEdit.age = updateUserDto.age;
 
-  async findOneByField(
-    options: FindOneOptions<User>,
-  ): Promise<User | undefined> {
-    try {
-      return await this.userRepository.findOne(options);
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    try {
-      const result = await this.userRepository.update(id, updateUserDto);
-      if (result.affected == 1) {
-        return {
-          status: '200',
-          message: 'Update successful',
-        };
-      }
-      throw new HttpException('Update failed', HttpStatus.NOT_FOUND);
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async remove(id: number): Promise<DeleteResult> {
-    try {
-      const result: DeleteResult = await this.userRepository.delete(id);
-      if (result.affected == 0)
-        throw new HttpException(
-          'Error, entity not deleted!',
-          HttpStatus.NOT_FOUND,
-        );
+      const result: User = await this.userRepository.save(userForEdit);
       return result;
     } catch (error) {
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      logger.error('updateUserDb: ' + error);
+    }
+  }
+
+  async changePasswordDb(user: User, newPassword: string) {
+    user.password = newPassword;
+    const rs: User = await this.userRepository.save(user);
+    return rs;
+  }
+
+  async deleteUserDb(id: string): Promise<DeleteResult> {
+    try {
+      const result: DeleteResult = await this.userRepository.delete(id);
+      if (result.affected == 1) return result;
+    } catch (error) {
+      logger.error('deleteUserDb: ' + error);
     }
   }
 }

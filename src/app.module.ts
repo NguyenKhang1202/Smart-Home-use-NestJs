@@ -13,7 +13,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesGuard } from './security/guard/roles.guard';
-import { HouseModule } from './house/house.module';
+// import { HouseModule } from './house/house.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 @Module({
   imports: [
@@ -24,7 +24,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
     }),
     UsersModule,
     AuthModule,
-    HouseModule,
+    // HouseModule,
   ],
   controllers: [AppController],
   providers: [

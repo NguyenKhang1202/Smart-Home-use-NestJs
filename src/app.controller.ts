@@ -15,6 +15,7 @@ import { JwtAuthGuard } from './security/guard/jwt-auth.guard';
 import { Roles } from './security/decorators/roles.decorators';
 import { Role } from './users/entities/role.enum';
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Auth } from './security/decorators/auth.decorator';
 @ApiTags('App')
 @Controller('')
 export class AppController {
@@ -27,11 +28,9 @@ export class AppController {
     status: 200,
     description: 'Test function get success!',
   })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiOperation({ summary: 'test' })
   @Get('/app/protected')
-  @UseGuards(JwtAuthGuard)
-  @Roles(Role.ADMIN, Role.USER)
+  @Auth(Role.ADMIN)
   getHello(@Req() req): string {
     console.log(req.user);
     return this.appService.getHello();

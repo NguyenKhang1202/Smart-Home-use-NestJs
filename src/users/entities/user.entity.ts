@@ -11,8 +11,8 @@ import { Role } from './role.enum';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ type: 'varchar', unique: true, length: 50 })
   username: string;
@@ -27,10 +27,10 @@ export class User {
   @Column({ type: 'varchar', length: 50 })
   fullName: string;
 
-  @Column('text')
+  @Column({ type: 'text', default: Role.USER })
   role: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', unique: true, length: 50 })
   email: string;
 
   @CreateDateColumn()

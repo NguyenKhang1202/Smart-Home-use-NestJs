@@ -16,10 +16,35 @@ import { Role } from 'src/users/entities/role.enum';
 import { Sensor } from './entities/sensor.entity';
 
 @ApiTags('devices')
-@Auth(Role.USER)
+// @Auth(Role.USER)
 @Controller('/api/v1/sensors')
 export class SensorController {
   constructor(private readonly sensorService: SensorService) {}
+
+  @ApiOperation({ summary: 'Get data sensor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get data sensor success!',
+  })
+  @Get('/new-data')
+  async getSensorData(): Promise<APIResponse<Sensor> | undefined> {
+    const rs = await this.sensorService.getDataSensorDb();
+    if (rs) {
+      return {
+        status: APIStatus.SUCCESS,
+        message: 'Get data sensor successfully',
+        data: rs,
+      };
+    }
+
+    throw new HttpException(
+      {
+        status: APIStatus.ERROR,
+        message: 'Server error!',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
 
   @ApiOperation({ summary: 'Get all data sensors' })
   @ApiResponse({
@@ -28,7 +53,7 @@ export class SensorController {
   })
   @Get()
   async getAllSensorData(): Promise<APIResponse<Sensor[]> | undefined> {
-    const rs = await this.sensorService.getAllSensorDataDb({});
+    const rs = await this.sensorService.getAllSensorDataDb();
     if (rs) {
       return {
         status: APIStatus.SUCCESS,

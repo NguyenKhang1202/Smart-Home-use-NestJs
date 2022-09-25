@@ -33,7 +33,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Get list of users success!' })
   @UseInterceptors(ClassSerializerInterceptor)
-  @Auth(Role.ADMIN)
+  // @Auth(Role.ADMIN)
   @Get()
   async getAllUser(): Promise<APIResponse<User[]>> {
     const users: User[] = await this.usersService.getAllUserDb({});

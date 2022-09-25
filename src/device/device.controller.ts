@@ -22,10 +22,9 @@ import { UpdateDeviceDto } from './dto/update-device.dto';
 import { Device } from './entities/device.entity';
 const logger: Logger = new Logger('device.controller.ts');
 import * as moment from 'moment';
-// import { MqttService } from 'src/mqtt/mqtt.service';
 import { topicMqtt } from 'src/config/configuration';
 @ApiTags('devices')
-@Auth(Role.USER)
+// @Auth(Role.USER)
 @Controller('/api/v1/devices')
 export class DeviceController {
   constructor(
@@ -89,7 +88,7 @@ export class DeviceController {
     @Body() createDeviceDto: CreateDeviceDto,
     @Req() req: Request | any,
   ): Promise<APIResponse<Device> | undefined> {
-    const userId = req?.user?.userId;
+    const userId = req?.user?.id;
     const isDeviceExist: Device = await this.deviceService.getDeviceDb({
       deviceName: createDeviceDto.deviceName,
       userId,

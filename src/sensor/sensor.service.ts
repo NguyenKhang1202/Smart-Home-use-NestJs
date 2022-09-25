@@ -12,13 +12,22 @@ export class SensorService {
     private readonly sensorRepository: Repository<Sensor>,
   ) {}
 
-  async getAllSensorDataDb(query) {
+  async getDataSensorDb(): Promise<Sensor | undefined> {
+    try {
+      const sensor: Sensor[] = await this.sensorRepository.find({
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+      return sensor[0];
+    } catch (error) {
+      logger.error('getDataSensorDb: ' + error);
+    }
+  }
+  async getAllSensorDataDb() {
     try {
       const sensors: Sensor[] = await this.sensorRepository.find({
-        where: {
-          ...query,
-          sort: { createdAt: 'asc' },
-        },
+        order: { createdAt: 'DESC' },
       });
       return sensors;
     } catch (error) {

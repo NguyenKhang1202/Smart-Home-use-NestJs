@@ -8,7 +8,12 @@ import { HttpExceptionFilter } from './middlewares/http-exception.filter';
 const logger: Logger = new Logger('Main');
 async function bootstrap() {
   // setup Cors
-  const appOptions = { cors: true };
+  const appOptions = {
+    cors: {
+      origin: 'http://localhost:3000',
+      credentials: true,
+    },
+  };
   const app = await NestFactory.create(AppModule, appOptions);
 
   // setup Validate
@@ -28,8 +33,8 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  await app.listen(3000);
-  logger.log('App listening on port 3000');
+  await app.listen(4000);
+  logger.log('App listening on port 4000');
   // logger.warn('App listening on port 3000');
   // logger.error('App listening on port 3000');
   // logger.debug('App listening on port 3000');

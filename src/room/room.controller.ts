@@ -23,7 +23,7 @@ import { Room } from './entities/room.entity';
 const logger: Logger = new Logger('room.controller.ts');
 
 @ApiTags('rooms')
-@Auth(Role.USER)
+// @Auth(Role.USER)
 @Controller('/api/v1/rooms')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
@@ -31,7 +31,7 @@ export class RoomController {
   @ApiOperation({ summary: 'Get all rooms' })
   @ApiResponse({ status: 200, description: 'Get list of rooms success!' })
   @Get()
-  async findAll(): Promise<APIResponse<Room[]> | undefined> {
+  async getAllRooms(): Promise<APIResponse<Room[]> | undefined> {
     const rooms: Room[] = await this.roomService.getAllRoomsDb();
     if (rooms) {
       return {
@@ -94,7 +94,7 @@ export class RoomController {
         HttpStatus.CONFLICT,
       );
     }
-    const userId = req?.user?.userId;
+    const userId = req?.user?.id;
     const room = await this.roomService.createRoomDb(userId, createRoomDto);
     if (room) {
       return {

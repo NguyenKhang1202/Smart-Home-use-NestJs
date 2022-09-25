@@ -29,8 +29,8 @@ export class AppController {
     description: 'Test function get success!',
   })
   @ApiOperation({ summary: 'test' })
-  @Get('/app/protected')
-  @Auth(Role.ADMIN)
+  @Get('/app/mqtt')
+  // @Auth(Role.ADMIN)
   getHello(@Req() req: Request | any): string {
     console.log(req.user);
     return this.appService.getHello();

@@ -1,16 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { Device } from './entities/device.entity';
 const logger: Logger = new Logger('device.services.ts');
-
+import { topicMqtt } from 'src/config/configuration';
+import { MqttService } from 'nest-mqtt';
 @Injectable()
 export class DeviceService {
   constructor(
     @InjectRepository(Device)
     private readonly deviceRepository: Repository<Device>,
+    @Inject(MqttService) private readonly mqttService: MqttService,
   ) {}
 
   // get all devices
@@ -60,8 +62,12 @@ export class DeviceService {
       });
       if (deviceForEdit) {
         deviceForEdit.status = updateDeviceDto?.status;
-        deviceForEdit.wattage = updateDeviceDto?.wattage;
         const rs: Device = await this.deviceRepository.save(deviceForEdit);
+        const message: MqttMessageControlDevice = {
+          deviceId: id,
+          status: updateDeviceDto.status,
+        };
+        this.mqttService.publish(topicMqtt.smart_home_control_device, message);
         return rs;
       }
     } catch (error) {

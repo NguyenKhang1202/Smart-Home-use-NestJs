@@ -11,10 +11,4 @@ export class CreateSensorDto {
   @IsNumber()
   @IsNotEmpty()
   temperature: number;
-
-  @ApiProperty({ type: 'string', required: false })
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  userId: string;
 }

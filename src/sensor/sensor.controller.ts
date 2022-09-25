@@ -51,13 +51,8 @@ export class SensorController {
   @Post()
   async insertDataSensor(
     @Body() createSensorDto: CreateSensorDto,
-    @Req() req: Request | any,
   ): Promise<APIResponse<Sensor> | undefined> {
-    const userId: string = req?.user?.userId;
-    const rs = await this.sensorService.insertDataSensorDb(
-      userId,
-      createSensorDto,
-    );
+    const rs = await this.sensorService.insertDataSensorDb(createSensorDto);
     if (rs) {
       return {
         status: APIStatus.SUCCESS,

@@ -22,12 +22,15 @@ import { UpdateDeviceDto } from './dto/update-device.dto';
 import { Device } from './entities/device.entity';
 const logger: Logger = new Logger('device.controller.ts');
 import * as moment from 'moment';
-
+// import { MqttService } from 'src/mqtt/mqtt.service';
+import { topicMqtt } from 'src/config/configuration';
 @ApiTags('devices')
 @Auth(Role.USER)
 @Controller('/api/v1/devices')
 export class DeviceController {
-  constructor(private readonly deviceService: DeviceService) {}
+  constructor(
+    private readonly deviceService: DeviceService, // private readonly mqttService: MqttService,
+  ) {}
 
   @ApiOperation({ summary: 'Get all devices' })
   @ApiResponse({ status: 200, description: 'Get list of devices success!' })
@@ -133,6 +136,11 @@ export class DeviceController {
       updateDeviceDto,
     );
     if (rs) {
+      // const message: MqttMessageControlDevice = {
+      //   deviceId: id,
+      //   status: updateDeviceDto.status,
+      // };
+      // this.mqttService.publish(topicMqtt.smart_home_control_device, message);
       return {
         status: APIStatus.SUCCESS,
         message: 'Update device successfully',

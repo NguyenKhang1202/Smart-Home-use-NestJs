@@ -58,7 +58,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get one user' })
   @ApiResponse({ status: 200, description: 'Get user success!' })
   @UseInterceptors(ClassSerializerInterceptor)
-  @Auth(Role.ADMIN)
+  // @Auth(Role.ADMIN)
   @Get(':id')
   async getUser(@Param('id') id: string): Promise<APIResponse<User>> {
     const user: User = await this.usersService.getUserDb({ id });

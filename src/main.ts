@@ -5,6 +5,10 @@ import { setupPassportLocal } from './config/local-passport';
 import { setupSwagger } from './config/swagger';
 import { LoggingInterceptor } from './client/interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './middlewares/http-exception.filter';
+import { ConfigService } from '@nestjs/config';
+// Import firebase-admin
+import * as admin from 'firebase-admin';
+import { setupFirebase } from './config/firebase.config';
 const logger: Logger = new Logger('Main');
 async function bootstrap() {
   // setup Cors
@@ -15,6 +19,7 @@ async function bootstrap() {
     },
   };
   const app = await NestFactory.create(AppModule, appOptions);
+  const configService: ConfigService = app.get(ConfigService);
 
   // setup Validate
   app.useGlobalPipes(
@@ -33,11 +38,9 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  await app.listen(4000);
-  logger.log('App listening on port 4000');
-  // logger.warn('App listening on port 3000');
-  // logger.error('App listening on port 3000');
-  // logger.debug('App listening on port 3000');
-  // logger.verbose('App listening on port 3000');
+  setupFirebase(admin);
+
+  await app.listen(configService.get<string>('API_PORT'));
+  logger.log(`App listening on port ${configService.get<string>('API_PORT')}`);
 }
 bootstrap();

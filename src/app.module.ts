@@ -17,7 +17,7 @@ import { mqttConfig } from 'src/config/mqtt.config';
   imports: [
     TypeOrmModule.forRoot(config),
     ConfigModule.forRoot({
-      envFilePath: [, '.env.development', '.env', '.env.production'],
+      envFilePath: ['.env.development', '.env'],
       load: [configuration],
     }),
     MqttModule.forRootAsync({

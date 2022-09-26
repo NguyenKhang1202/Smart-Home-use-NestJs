@@ -14,7 +14,6 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/security/decorators/auth.decorator';
 import { Role } from 'src/users/entities/role.enum';
 import { Sensor } from './entities/sensor.entity';
-
 @ApiTags('devices')
 // @Auth(Role.USER)
 @Controller('/api/v1/sensors')
